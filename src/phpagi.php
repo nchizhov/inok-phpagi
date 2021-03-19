@@ -140,7 +140,7 @@ class AGI
                             "admin" => null,
                             "tempdir" => AST_TMP_DIR];
 
-    /**
+  /**
    * Constructor
    *
    * @param string $config is the name of the config file to parse
@@ -1293,10 +1293,11 @@ class AGI
 
     // clean up old files
     $delete = time() - 2592000; // 1 month
-    foreach (glob($this->config['phpagi']['tempdir'] . DIRECTORY_SEPARATOR . 'text2wav_*') as $file)
+    foreach (glob($this->config['phpagi']['tempdir'] . DIRECTORY_SEPARATOR . 'text2wav_*') as $file) {
       if (filemtime($file) < $delete) {
         unlink($file);
       }
+    }
 
     return $ret;
   }
@@ -1344,10 +1345,11 @@ class AGI
 
     // clean up old files
     $delete = time() - 2592000; // 1 month
-    foreach (glob($this->config['phpagi']['tempdir'] . DIRECTORY_SEPARATOR . 'swift_*') as $file)
+    foreach (glob($this->config['phpagi']['tempdir'] . DIRECTORY_SEPARATOR . 'swift_*') as $file) {
       if (filemtime($file) < $delete) {
         unlink($file);
       }
+    }
 
     return $ret;
   }
@@ -1619,7 +1621,7 @@ class AGI
   function &new_AsteriskManager(): AGI_AsteriskManager {
     $this->asm = new AGI_AsteriskManager(null, $this->config['asmanager']);
     $this->asm->setPagi($this);
-    $this->config['asmanager'] =& $this->asm->config['asmanager'];
+    $this->config['asmanager'] = &$this->asm->config['asmanager'];
     return $this->asm;
   }
 
@@ -1666,8 +1668,7 @@ class AGI
     $ret['code'] = substr($str, 0, 3);
     $str = trim(substr($str, 3));
 
-    if ($str[0] == '-') // we have a multiline response!
-    {
+    if ($str[0] == '-') { // we have a multiline response!
       $count = 0;
       $str = substr($str, 1) . "\n";
       $line = fgets($this->in, 4096);
@@ -1684,8 +1685,7 @@ class AGI
 
     $ret['result'] = null;
     $ret['data'] = '';
-    if ($ret['code'] != AGIRES_OK) // some sort of error
-    {
+    if ($ret['code'] != AGIRES_OK) { // some sort of error
       $ret['data'] = $str;
       $this->conlog(print_r($ret, true));
     } else { // normal AGIRES_OK response

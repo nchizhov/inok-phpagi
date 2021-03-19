@@ -9,7 +9,7 @@
   ],
   "homepage": "http://blog.kgd.in",
   "license": "LGPL-2.1-or-later",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "autoload": {
     "classmap": [
       "src/phpagi.php",

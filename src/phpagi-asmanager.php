@@ -77,7 +77,7 @@ class AGI_AsteriskManager
    * @access private
    * @var AGI
    */
-  public $pagi = false;
+  private $pagi = false;
 
   /**
    * Event Handlers
@@ -97,6 +97,12 @@ class AGI_AsteriskManager
    */
   private $_logged_in = false;
 
+  private $defaultConfig = ["server" => 'localhost',
+                            "port" => 5038,
+                            "username" => "phpagi",
+                            "secret" => "phpagi",
+                            "write_log" => false];
+
   public function setPagi(&$agi) {
     $this->pagi = $agi;
   }
@@ -109,21 +115,21 @@ class AGI_AsteriskManager
    */
   function __construct($config = null, array $optconfig = []) {
     // load config
-    if (!is_null($config) && file_exists($config))
+    if (!is_null($config) && file_exists($config)) {
       $this->config = parse_ini_file($config, true);
-    elseif (file_exists(DEFAULT_PHPAGI_CONFIG))
+    } elseif (file_exists(DEFAULT_PHPAGI_CONFIG)) {
       $this->config = parse_ini_file(DEFAULT_PHPAGI_CONFIG, true);
+    }
 
     // If optconfig is specified, stuff values and vars into 'asmanager' config array.
-    foreach ($optconfig as $var => $val)
+    foreach ($optconfig as $var => $val) {
       $this->config['asmanager'][$var] = $val;
+    }
 
     // add default values to config for uninitialized values
-    if (!isset($this->config['asmanager']['server'])) $this->config['asmanager']['server'] = 'localhost';
-    if (!isset($this->config['asmanager']['port'])) $this->config['asmanager']['port'] = 5038;
-    if (!isset($this->config['asmanager']['username'])) $this->config['asmanager']['username'] = 'phpagi';
-    if (!isset($this->config['asmanager']['secret'])) $this->config['asmanager']['secret'] = 'phpagi';
-    if (!isset($this->config['asmanager']['write_log'])) $this->config['asmanager']['write_log'] = false;
+    foreach (array_keys($this->defaultConfig) as $name => $value) {
+      $this->config['asmanager'][$name] = $this->config['asmanager'][$name] ?? $value;
+    }
   }
 
   /**
@@ -201,7 +207,7 @@ class AGI_AsteriskManager
     }
 
     $haveData = array_key_exists("data", $parameters);
-    $asteriskRawOutput = [];;
+    $asteriskRawOutput = [];
 
     foreach ($msgarr as $num => $str) {
       $kv = explode(':', $str, 2);
@@ -270,10 +276,10 @@ class AGI_AsteriskManager
       $evlist = [];
       do {
         $res = $this->wait_response(false, $actionid);
-        if (isset($res['EventList']) && $res['EventList'] == 'Complete')
+        if (isset($res['EventList']) && $res['EventList'] == 'Complete') {
           break;
-        else
-          $evlist[] = $res;
+        }
+        $evlist[] = $res;
       } while (true);
       $res['events'] = $evlist;
     }
@@ -295,9 +301,15 @@ class AGI_AsteriskManager
    */
   function connect($server = null, $username = null, $secret = null): bool {
     // use config if not specified
-    if (is_null($server)) $server = $this->config['asmanager']['server'];
-    if (is_null($username)) $username = $this->config['asmanager']['username'];
-    if (is_null($secret)) $secret = $this->config['asmanager']['secret'];
+    if (is_null($server)) {
+      $server = $this->config['asmanager']['server'];
+    }
+    if (is_null($username)) {
+      $username = $this->config['asmanager']['username'];
+    }
+    if (is_null($secret)) {
+      $secret = $this->config['asmanager']['secret'];
+    }
 
     // get port from server if specified
     if (strpos($server, ':') !== false) {
@@ -341,11 +353,13 @@ class AGI_AsteriskManager
   /**
    * Disconnect
    *
+   * @throws Exception
    * @example examples/sip_show_peer.php Get information about a sip peer
    */
   function disconnect() {
-    if ($this->_logged_in)
+    if ($this->_logged_in) {
       $this->logoff();
+    }
     fclose($this->socket);
   }
 
@@ -396,7 +410,9 @@ class AGI_AsteriskManager
    */
   function Command(string $command, $actionid = null): array {
     $parameters = ['Command' => $command];
-    if ($actionid) $parameters['ActionID'] = $actionid;
+    if ($actionid) {
+      $parameters['ActionID'] = $actionid;
+    }
     return $this->send_request('Command', $parameters);
   }
 
@@ -433,8 +449,9 @@ class AGI_AsteriskManager
   function DBGet(string $family, string $key, $actionid = null): string {
     $parameters = ['Family' => $family,
                    'Key' => $key];
-    if ($actionid == null)
+    if ($actionid == null) {
       $actionid = $this->ActionID();
+    }
     $parameters['ActionID'] = $actionid;
     $response = $this->send_request("DBGet", $parameters);
     if ($response['Response'] == "Success") {
@@ -457,7 +474,9 @@ class AGI_AsteriskManager
   function ExtensionState(string $exten, string $context, $actionid = null): array {
     $parameters = ['Exten' => $exten,
                    'Context' => $context];
-    if ($actionid) $parameters['ActionID'] = $actionid;
+    if ($actionid) {
+      $parameters['ActionID'] = $actionid;
+    }
     return $this->send_request('ExtensionState', $parameters);
   }
 
@@ -475,7 +494,9 @@ class AGI_AsteriskManager
   function GetVar(string $channel, string $variable, $actionid = null): array {
     $parameters = ['Channel' => $channel,
                    'Variable' => $variable];
-    if ($actionid) $parameters['ActionID'] = $actionid;
+    if ($actionid) {
+      $parameters['ActionID'] = $actionid;
+    }
     return $this->send_request('GetVar', $parameters);
   }
 
@@ -540,7 +561,9 @@ class AGI_AsteriskManager
    */
   function MailboxCount(string $mailbox, $actionid = null): array {
     $parameters = ['Mailbox' => $mailbox];
-    if ($actionid) $parameters['ActionID'] = $actionid;
+    if ($actionid) {
+      $parameters['ActionID'] = $actionid;
+    }
     return $this->send_request('MailboxCount', $parameters);
   }
 
@@ -560,7 +583,9 @@ class AGI_AsteriskManager
    */
   function MailboxStatus(string $mailbox, $actionid = null): array {
     $parameters = ['Mailbox' => $mailbox];
-    if ($actionid) $parameters['ActionID'] = $actionid;
+    if ($actionid) {
+      $parameters['ActionID'] = $actionid;
+    }
     return $this->send_request('MailboxStatus', $parameters);
   }
 
@@ -577,9 +602,15 @@ class AGI_AsteriskManager
    */
   function Monitor(string $channel, $file = null, $format = null, $mix = null): array {
     $parameters = ['Channel' => $channel];
-    if ($file) $parameters['File'] = $file;
-    if ($format) $parameters['Format'] = $format;
-    if (!is_null($file)) $parameters['Mix'] = ($mix) ? 'true' : 'false';
+    if ($file) {
+      $parameters['File'] = $file;
+    }
+    if ($format) {
+      $parameters['Format'] = $format;
+    }
+    if (!is_null($file)) {
+      $parameters['Mix'] = ($mix) ? 'true' : 'false';
+    }
     return $this->send_request('Monitor', $parameters);
   }
 
@@ -608,19 +639,41 @@ class AGI_AsteriskManager
                      $timeout = null, $callerid = null, $variable = null, $account = null, $async = null, $actionid = null): array {
     $parameters = ['Channel' => $channel];
 
-    if ($exten) $parameters['Exten'] = $exten;
-    if ($context) $parameters['Context'] = $context;
-    if ($priority) $parameters['Priority'] = $priority;
+    if ($exten) {
+      $parameters['Exten'] = $exten;
+    }
+    if ($context) {
+      $parameters['Context'] = $context;
+    }
+    if ($priority) {
+      $parameters['Priority'] = $priority;
+    }
 
-    if ($application) $parameters['Application'] = $application;
-    if ($data) $parameters['Data'] = $data;
+    if ($application) {
+      $parameters['Application'] = $application;
+    }
+    if ($data) {
+      $parameters['Data'] = $data;
+    }
 
-    if ($timeout) $parameters['Timeout'] = $timeout;
-    if ($callerid) $parameters['CallerID'] = $callerid;
-    if ($variable) $parameters['Variable'] = $variable;
-    if ($account) $parameters['Account'] = $account;
-    if (!is_null($async)) $parameters['Async'] = ($async) ? 'true' : 'false';
-    if ($actionid) $parameters['ActionID'] = $actionid;
+    if ($timeout) {
+      $parameters['Timeout'] = $timeout;
+    }
+    if ($callerid) {
+      $parameters['CallerID'] = $callerid;
+    }
+    if ($variable) {
+      $parameters['Variable'] = $variable;
+    }
+    if ($account) {
+      $parameters['Account'] = $account;
+    }
+    if (!is_null($async)) {
+      $parameters['Async'] = ($async) ? 'true' : 'false';
+    }
+    if ($actionid) {
+      $parameters['ActionID'] = $actionid;
+    }
 
     return $this->send_request('Originate', $parameters);
   }
@@ -661,8 +714,12 @@ class AGI_AsteriskManager
   function QueueAdd(string $queue, string $interface, int $penalty = 0, $memberName = false): array {
     $parameters = ['Queue' => $queue,
                    'Interface' => $interface];
-    if ($penalty) $parameters['Penalty'] = $penalty;
-    if ($memberName) $parameters["MemberName"] = $memberName;
+    if ($penalty) {
+      $parameters['Penalty'] = $penalty;
+    }
+    if ($memberName) {
+      $parameters["MemberName"] = $memberName;
+    }
     return $this->send_request('QueueAdd', $parameters);
   }
 
@@ -758,7 +815,9 @@ class AGI_AsteriskManager
   function SetCDRUserField(string $userfield, string $channel, $append = null): array {
     $parameters = ['UserField' => $userfield,
                    'Channel' => $channel];
-    if ($append) $parameters['Append'] = $append;
+    if ($append) {
+      $parameters['Append'] = $append;
+    }
     return $this->send_request('SetCDRUserField', $parameters);
   }
 
@@ -789,7 +848,9 @@ class AGI_AsteriskManager
    */
   function Status(string $channel, $actionid = null): array {
     $parameters = ['Channel' => $channel];
-    if ($actionid) $parameters['ActionID'] = $actionid;
+    if ($actionid) {
+      $parameters['ActionID'] = $actionid;
+    }
     return $this->send_request('Status', $parameters);
   }
 
@@ -890,10 +951,11 @@ class AGI_AsteriskManager
    * @param integer $level from 1 to 4
    */
   function log(string $message, int $level = 1) {
-    if ($this->pagi != false)
+    if ($this->pagi != false) {
       $this->pagi->conlog($message, $level);
-    elseif ($this->config['asmanager']['write_log'])
+    } elseif ($this->config['asmanager']['write_log']) {
       error_log(date('r') . ' - ' . $message);
+    }
   }
 
   /**
@@ -970,22 +1032,26 @@ class AGI_AsteriskManager
    * @param array $parameters
    * @return mixed result of event handler or false if no handler was found
    */
-  function process_event(array $parameters) {
+  private function process_event(array $parameters) {
     $ret = false;
     $e = strtolower($parameters['Event']);
     $this->log("Got event.. $e");
 
     $handler = '';
-    if (isset($this->event_handlers[$e])) $handler = $this->event_handlers[$e];
-    elseif (isset($this->event_handlers['*'])) $handler = $this->event_handlers['*'];
+    if (isset($this->event_handlers[$e])) {
+      $handler = $this->event_handlers[$e];
+    } elseif (isset($this->event_handlers['*'])) {
+      $handler = $this->event_handlers['*'];
+    }
 
     if (function_exists($handler)) {
       $this->log("Execute handler $handler");
       $ret = $handler($e, $parameters, $this->server, $this->port);
     } elseif (is_array($handler)) {
       $ret = call_user_func($handler, $e, $parameters, $this->server, $this->port);
-    } else
+    } else {
       $this->log("No event handler for event '$e'");
+    }
     return $ret;
   }
 }

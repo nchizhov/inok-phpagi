@@ -33,8 +33,9 @@ $fastagi = new AGI();
 
 $fastagi->verbose(print_r($fastagi, true));
 
-if (!isset($fastagi->config['fastagi']['basedir']))
+if (!isset($fastagi->config['fastagi']['basedir'])) {
   $fastagi->config['fastagi']['basedir'] = dirname(__FILE__);
+}
 
 // perform some security checks
 

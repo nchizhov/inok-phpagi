@@ -122,7 +122,7 @@ class AGI
    * @param string $config is the name of the config file to parse
    * @param array $optconfig is an array of configuration vars and values, stuffed into $this->config['phpagi']
    */
-  function __construct($config = null, array $optconfig = []) {
+  public function __construct($config = null, array $optconfig = []) {
     // load config
     if (!is_null($config) && file_exists($config)) {
       $this->config = parse_ini_file($config, true);
@@ -186,7 +186,7 @@ class AGI
     }
 
     $this->conlog('AGI Request:');
-    $this->conlog(print_r($this->request, true));
+    $this->conlog(/** @scrutinizer ignore-type */ print_r($this->request, true));
     $this->conlog('PHPAGI internal configuration:');
     $this->conlog(print_r($this->config, true));
   }
@@ -1166,9 +1166,9 @@ class AGI
    *
    * @param string $context
    * @param string $extension
-   * @param string $priority
+   * @param int $priority
    */
-  function setContext(string $context, string $extension = 's', $priority = 1) {
+  function setContext(string $context, string $extension = 's', int $priority = 1) {
     $this->set_context($context);
     $this->set_extension($extension);
     $this->set_priority($priority);
@@ -1662,7 +1662,7 @@ class AGI
     $ret['data'] = '';
     if ($ret['code'] != AGI_Others::AGIRES_OK) { // some sort of error
       $ret['data'] = $str;
-      $this->conlog(print_r($ret, true));
+      $this->conlog(/** @scrutinizer ignore-type */ print_r($ret, true));
     } else { // normal AGIRES_OK response
       $parse = explode(' ', trim($str));
       $in_token = false;

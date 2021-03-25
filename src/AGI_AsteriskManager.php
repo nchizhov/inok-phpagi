@@ -114,7 +114,7 @@ class AGI_AsteriskManager
    * @param string $config is the name of the config file to parse or a parent agi from which to read the config
    * @param array $optconfig is an array of configuration vars and values, stuffed into $this->config['asmanager']
    */
-  function __construct($config = null, array $optconfig = []) {
+  public function __construct($config = null, array $optconfig = []) {
     // load config
     if (!is_null($config) && file_exists($config)) {
       $this->config = parse_ini_file($config, true);
@@ -316,10 +316,10 @@ class AGI_AsteriskManager
     if (strpos($server, ':') !== false) {
       $c = explode(':', $server);
       $this->server = $c[0];
-      $this->port = $c[1];
+      $this->port = (int) $c[1];
     } else {
       $this->server = $server;
-      $this->port = $this->config['asmanager']['port'];
+      $this->port = (int) $this->config['asmanager']['port'];
     }
 
     // connect the socket

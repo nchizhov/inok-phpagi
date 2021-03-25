@@ -188,7 +188,7 @@ class AGI
     $this->conlog('AGI Request:');
     $this->conlog(/** @scrutinizer ignore-type */ print_r($this->request, true));
     $this->conlog('PHPAGI internal configuration:');
-    $this->conlog(print_r($this->config, true));
+    $this->conlog(/** @scrutinizer ignore-type */ print_r($this->config, true));
   }
 
   // *********************************************************************************************************

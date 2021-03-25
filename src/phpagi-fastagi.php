@@ -27,7 +27,9 @@
  *
  */
 
-require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'phpagi.php');
+use Inok\phpagi\AGI;
+
+require_once '../vendor/autoload.php';
 
 $fastagi = new AGI();
 

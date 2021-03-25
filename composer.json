@@ -9,12 +9,11 @@
   ],
   "homepage": "http://blog.kgd.in",
   "license": "LGPL-2.1-or-later",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "autoload": {
-    "classmap": [
-      "src/phpagi.php",
-      "src/phpagi-asmanager.php"
-    ]
+    "psr-4": {
+      "Inok\\phpagi\\": "src"
+    }
   },
   "require": {
     "php": ">=7.0 || ~8.0.0",

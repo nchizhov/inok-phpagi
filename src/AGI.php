@@ -1,5 +1,7 @@
 <?php
 
+namespace Inok\phpagi;
+
 /**
  * phpagi.php : PHP AGI Functions for Asterisk
  * @see https://github.com/welltime/phpagi
@@ -25,32 +27,6 @@
  * @package phpAGI
  * @version 2.20
  */
-
-if (!class_exists('AGI_AsteriskManager')) {
-  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'phpagi-asmanager.php');
-}
-
-define('AST_CONFIG_DIR', '/etc/asterisk/');
-define('AST_SPOOL_DIR', '/var/spool/asterisk/');
-define('AST_TMP_DIR', AST_SPOOL_DIR . '/tmp/');
-define('DEFAULT_PHPAGI_CONFIG', AST_CONFIG_DIR . '/phpagi.conf');
-
-define('AST_DIGIT_ANY', '0123456789#*');
-
-define('AGIRES_OK', 200);
-
-define('AST_STATE_DOWN', 0);
-define('AST_STATE_RESERVED', 1);
-define('AST_STATE_OFFHOOK', 2);
-define('AST_STATE_DIALING', 3);
-define('AST_STATE_RING', 4);
-define('AST_STATE_RINGING', 5);
-define('AST_STATE_UP', 6);
-define('AST_STATE_BUSY', 7);
-define('AST_STATE_DIALING_OFFHOOK', 8);
-define('AST_STATE_PRERING', 9);
-
-define('AUDIO_FILENO', 3); // STDERR_FILENO + 1
 
 /**
  * AGI class
@@ -111,14 +87,14 @@ class AGI
    *
    * @access private
    */
-  private $in = null;
+  private $in;
 
   /**
    * Output Stream
    *
    * @access private
    */
-  private $out = null;
+  private $out;
 
   /**
    * Audio Stream
@@ -138,7 +114,7 @@ class AGI
   private $defaultConfig = ["error_handler" => true,
                             "debug" => false,
                             "admin" => null,
-                            "tempdir" => AST_TMP_DIR];
+                            "tempdir" => AGI_Others::AST_TMP_DIR];
 
   /**
    * Constructor
@@ -150,8 +126,8 @@ class AGI
     // load config
     if (!is_null($config) && file_exists($config)) {
       $this->config = parse_ini_file($config, true);
-    } elseif (file_exists(DEFAULT_PHPAGI_CONFIG)) {
-      $this->config = parse_ini_file(DEFAULT_PHPAGI_CONFIG, true);
+    } elseif (file_exists(AGI_Others::DEFAULT_PHPAGI_CONFIG)) {
+      $this->config = parse_ini_file(AGI_Others::DEFAULT_PHPAGI_CONFIG, true);
     }
 
     // If optconfig is specified, stuff values and vars into 'phpagi' config array.
@@ -178,9 +154,8 @@ class AGI
 
     // initialize error handler
     if ($this->config['phpagi']['error_handler']) {
-      set_error_handler('phpagi_error_handler');
-      global $phpagi_error_handler_email;
-      $phpagi_error_handler_email = $this->config['phpagi']['admin'];
+      set_error_handler('\\Inok\\phpagi\\AGI_Others::phpagi_error_handler');
+      AGI_Others::$phpagi_error_handler_email = $this->config['phpagi']['admin'];
       error_reporting(E_ALL);
     }
 
@@ -194,7 +169,7 @@ class AGI
       $str = fgets($this->in);
     }
 
-    // open audio if eagi detected
+    // open audio if agi detected
     if ($this->request['agi_enhanced'] == '1.0') {
       if (file_exists('/proc/' . getmypid() . '/fd/3')) {
         $this->audio = fopen('/proc/' . getmypid() . '/fd/3', 'r');
@@ -247,34 +222,34 @@ class AGI
       case -1:
         $ret['data'] = trim("There is no channel that matches $channel");
         break;
-      case AST_STATE_DOWN:
+      case AGI_Others::AST_STATE_DOWN:
         $ret['data'] = 'Channel is down and available';
         break;
-      case AST_STATE_RESERVED:
+      case AGI_Others::AST_STATE_RESERVED:
         $ret['data'] = 'Channel is down, but reserved';
         break;
-      case AST_STATE_OFFHOOK:
+      case AGI_Others::AST_STATE_OFFHOOK:
         $ret['data'] = 'Channel is off hook';
         break;
-      case AST_STATE_DIALING:
+      case AGI_Others::AST_STATE_DIALING:
         $ret['data'] = 'Digits (or equivalent) have been dialed';
         break;
-      case AST_STATE_RING:
+      case AGI_Others::AST_STATE_RING:
         $ret['data'] = 'Line is ringing';
         break;
-      case AST_STATE_RINGING:
+      case AGI_Others::AST_STATE_RINGING:
         $ret['data'] = 'Remote end is ringing';
         break;
-      case AST_STATE_UP:
+      case AGI_Others::AST_STATE_UP:
         $ret['data'] = 'Line is up';
         break;
-      case AST_STATE_BUSY:
+      case AGI_Others::AST_STATE_BUSY:
         $ret['data'] = 'Line is busy';
         break;
-      case AST_STATE_DIALING_OFFHOOK:
+      case AGI_Others::AST_STATE_DIALING_OFFHOOK:
         $ret['data'] = 'Digits (or equivalent) have been dialed while offhook';
         break;
-      case AST_STATE_PRERING:
+      case AGI_Others::AST_STATE_PRERING:
         $ret['data'] = 'Channel has detected an incoming call and is waiting for ring';
         break;
       default:
@@ -918,7 +893,7 @@ class AGI
       $this->appendBuffer($buffer, $res);
       return $res;
     }
-    return ['code' => AGIRES_OK,
+    return ['code' => AGI_Others::AGIRES_OK,
             'result' => $this->ordBuffer($buffer)];
   }
 
@@ -939,7 +914,7 @@ class AGI
       $this->appendBuffer($buffer, $res);
       return $res;
     }
-    return ['code' => AGIRES_OK,
+    return ['code' => AGI_Others::AGIRES_OK,
             'result' => $this->ordBuffer($buffer)];
   }
 
@@ -960,7 +935,7 @@ class AGI
       $this->appendBuffer($buffer, $res);
       return $res;
     }
-    return ['code' => AGIRES_OK,
+    return ['code' => AGI_Others::AGIRES_OK,
             'result' => $this->ordBuffer($buffer)];
   }
 
@@ -981,7 +956,7 @@ class AGI
       $this->appendBuffer($buffer, $res);
       return $res;
     }
-    return ['code' => AGIRES_OK,
+    return ['code' => AGI_Others::AGIRES_OK,
             'result' => $this->ordBuffer($buffer)];
   }
 
@@ -1005,7 +980,7 @@ class AGI
       $this->appendBuffer($buffer, $res);
       return $res;
     }
-    return ['code' => AGIRES_OK,
+    return ['code' => AGI_Others::AGIRES_OK,
             'result' => $this->ordBuffer($buffer),
             'endpos' => 0];
   }
@@ -1027,7 +1002,7 @@ class AGI
       $this->appendBuffer($buffer, $res);
       return $res;
     }
-    return ['code' => AGIRES_OK,
+    return ['code' => AGI_Others::AGIRES_OK,
             'result' => $this->ordBuffer($buffer),
             'endpos' => 0];
   }
@@ -1050,7 +1025,7 @@ class AGI
       $this->appendBuffer($buffer, $res);
       return $res;
     }
-    return ['code' => AGIRES_OK,
+    return ['code' => AGI_Others::AGIRES_OK,
             'result' => $this->ordBuffer($buffer),
             'endpos' => 0];
   }
@@ -1071,7 +1046,7 @@ class AGI
       $this->appendBuffer($buffer, $res);
       return $res;
     }
-    return ['code' => AGIRES_OK,
+    return ['code' => AGI_Others::AGIRES_OK,
             'result' => $this->ordBuffer($buffer)];
   }
 
@@ -1116,14 +1091,14 @@ class AGI
     if (is_null($max_digits) || strlen($buffer) < $max_digits) {
       if ($buffer == '') {
         $res = $this->get_data($filename, $timeout, $max_digits);
-        if ($res['code'] == AGIRES_OK) {
+        if ($res['code'] == AGI_Others::AGIRES_OK) {
           $buffer .= $res['result'];
         }
         return $res;
       }
       while (is_null($max_digits) || strlen($buffer) < $max_digits) {
         $res = $this->wait_for_digit();
-        if ($res['code'] != AGIRES_OK) {
+        if ($res['code'] != AGI_Others::AGIRES_OK) {
           return $res;
         }
         if ($res['result'] == ord('#')) {
@@ -1132,7 +1107,7 @@ class AGI
         $buffer .= chr($res['result']);
       }
     }
-    return ['code' => AGIRES_OK,
+    return ['code' => AGI_Others::AGIRES_OK,
             'result' => $buffer];
   }
 
@@ -1163,7 +1138,7 @@ class AGI
           $ret = $this->stream_file($prompt, $keys);
         }
 
-        if ($ret['code'] != AGIRES_OK || $ret['result'] == -1) {
+        if ($ret['code'] != AGI_Others::AGIRES_OK || $ret['result'] == -1) {
           $choice = -1;
           break;
         }
@@ -1176,7 +1151,7 @@ class AGI
 
       if (is_null($choice)) {
         $ret = $this->get_data('beep', $timeout, 1);
-        if ($ret['code'] != AGIRES_OK || $ret['result'] == -1) {
+        if ($ret['code'] != AGI_Others::AGIRES_OK || $ret['result'] == -1) {
           $choice = -1;
         } elseif ($ret['result'] != '' && strpos(' ' . $keys, $ret['result'])) {
           $choice = $ret['result'];
@@ -1685,7 +1660,7 @@ class AGI
 
     $ret['result'] = null;
     $ret['data'] = '';
-    if ($ret['code'] != AGIRES_OK) { // some sort of error
+    if ($ret['code'] != AGI_Others::AGIRES_OK) { // some sort of error
       $ret['data'] = $str;
       $this->conlog(print_r($ret, true));
     } else { // normal AGIRES_OK response
@@ -1805,109 +1780,9 @@ class AGI
   }
 
   private function appendBuffer(string &$buffer, array $res) {
-    if ($res['code'] == AGIRES_OK && $res['result'] > 0) {
+    if ($res['code'] == AGI_Others::AGIRES_OK && $res['result'] > 0) {
       $buffer .= chr($res['result']);
     }
   }
 }
-
-
-/**
- * error handler for phpagi.
- *
- * @param integer $level PHP error level
- * @param string $message error message
- * @param string $file path to file
- * @param integer $line line number of error
- * @param array $context variables in the current scope
- */
-function phpagi_error_handler(int $level, string $message, string $file, int $line, array $context) {
-  if (ini_get('error_reporting') == 0) {
-    return; // this happens with an @
-  }
-
-  @syslog(LOG_WARNING, $file . '[' . $line . ']: ' . $message);
-
-  global $phpagi_error_handler_email;
-  if (function_exists('mail') && !is_null($phpagi_error_handler_email)) { // generate email debugging information
-    // decode error level
-    switch ($level) {
-      case E_WARNING:
-      case E_USER_WARNING:
-        $level = "Warning";
-        break;
-      case E_NOTICE:
-      case E_USER_NOTICE:
-        $level = "Notice";
-        break;
-      case E_USER_ERROR:
-        $level = "Error";
-        break;
-    }
-
-    // build message
-    $basefile = basename($file);
-    $subject = "$basefile/$line/$level: $message";
-    $message = "$level: $message in $file on line $line\n\n";
-
-    // TODO: OLD
-    /*if (strpos(' ' . strtolower($message), 'mysql')) {
-      if (function_exists('mysql_errno')) {
-        $message .= 'MySQL error ' . mysql_errno() . ": " . mysql_error() . "\n\n";
-      } else if (function_exists('mysqli_errno')) {
-        $message .= 'MySQL error ' . mysqli_errno() . ": " . mysqli_error() . "\n\n";
-      }
-    }*/
-
-    // figure out who we are
-    if (function_exists('socket_create')) {
-      $addr = null;
-      $port = 80;
-      $socket = @socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-      @socket_connect($socket, '64.0.0.0', $port);
-      @socket_getsockname($socket, $addr, $port);
-      @socket_close($socket);
-      $message .= "\n\nIP Address: $addr\n";
-    }
-
-    // include variables
-    $message .= "\n\nContext:\n" . print_r($context, true);
-    $message .= "\n\nGLOBALS:\n" . print_r($GLOBALS, true);
-    $message .= "\n\nBacktrace:\n" . print_r(debug_backtrace(), true);
-
-    // include code fragment
-    if (file_exists($file)) {
-      $message .= "\n\n$file:\n";
-      $code = @file($file);
-      for ($i = max(0, $line - 10); $i < min($line + 10, count($code)); $i++) {
-        $message .= ($i + 1) . "\t$code[$i]";
-      }
-    }
-
-    // make sure message is fully readable (convert unprintable chars to hex representation)
-    $ret = '';
-    for ($i = 0; $i < strlen($message); $i++) {
-      $c = ord($message[$i]);
-      if ($c == 10 || $c == 13 || $c == 9) {
-        $ret .= $message[$i];
-      } elseif ($c < 16) {
-        $ret .= '\x0' . dechex($c);
-      } elseif ($c < 32 || $c > 127) {
-        $ret .= '\x' . dechex($c);
-      } else {
-        $ret .= $message[$i];
-      }
-    }
-    $message = $ret;
-
-    // send the mail if less than 5 errors
-    static $mailcount = 0;
-    if ($mailcount < 5) {
-      @mail($phpagi_error_handler_email, $subject, $message);
-    }
-    $mailcount++;
-  }
-}
-
-$phpagi_error_handler_email = null;
 

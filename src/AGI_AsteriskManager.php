@@ -1,4 +1,9 @@
 <?php
+
+namespace Inok\phpagi;
+
+use Exception;
+
 /**
  * phpagi-asmanager.php : PHP Asterisk Manager functions
  * @see https://github.com/welltime/phpagi
@@ -25,10 +30,6 @@
  * Please submit bug reports, patches, etc to https://github.com/welltime/phpagi
  *
  */
-
-if (!class_exists('AGI')) {
-  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'phpagi.php');
-}
 
 /**
  * Asterisk Manager class
@@ -117,8 +118,8 @@ class AGI_AsteriskManager
     // load config
     if (!is_null($config) && file_exists($config)) {
       $this->config = parse_ini_file($config, true);
-    } elseif (file_exists(DEFAULT_PHPAGI_CONFIG)) {
-      $this->config = parse_ini_file(DEFAULT_PHPAGI_CONFIG, true);
+    } elseif (file_exists(AGI_Others::DEFAULT_PHPAGI_CONFIG)) {
+      $this->config = parse_ini_file(AGI_Others::DEFAULT_PHPAGI_CONFIG, true);
     }
 
     // If optconfig is specified, stuff values and vars into 'asmanager' config array.
@@ -127,7 +128,7 @@ class AGI_AsteriskManager
     }
 
     // add default values to config for uninitialized values
-    foreach (array_keys($this->defaultConfig) as $name => $value) {
+    foreach ($this->defaultConfig as $name => $value) {
       $this->config['asmanager'][$name] = $this->config['asmanager'][$name] ?? $value;
     }
   }

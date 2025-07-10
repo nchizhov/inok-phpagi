@@ -9,7 +9,7 @@
   ],
   "homepage": "http://blog.kgd.in",
   "license": "LGPL-2.1-or-later",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "autoload": {
     "psr-4": {
       "Inok\\phpagi\\": "src"

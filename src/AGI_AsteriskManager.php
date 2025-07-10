@@ -324,7 +324,7 @@ class AGI_AsteriskManager
 
     // connect the socket
     $errno = $errstr = null;
-    $this->socket = fsockopen($this->server, $this->port, $errno, $errstr);
+    $this->socket = @fsockopen($this->server, $this->port, $errno, $errstr);
     if ($this->socket === false) {
       $this->log("Unable to connect to manager {$this->server}:{$this->port} ($errno): $errstr");
       return false;
